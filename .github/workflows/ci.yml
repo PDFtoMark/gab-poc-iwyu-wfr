@@ -1,0 +1,9 @@
+name: IWYU CI
+on:
+  schedule:
+    - cron: '38 3 * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo baseline
