@@ -1,0 +1,35 @@
+name: dlprobe
+on:
+  workflow_dispatch:
+permissions:
+  actions: read
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - name: legacy v3.1.0 client download
+        id: old
+        continue-on-error: true
+        uses: actions/github-script@v3.1.0
+        with:
+          script: |
+            var fs = require('fs');
+            var arts = await github.actions.listWorkflowRunArtifacts({owner: context.repo.owner, repo: context.repo.repo, run_id: 41722148848});
+            var m = arts.data.artifacts.filter(a => a.name == 'pr-comments')[0];
+            core.info('found artifact ' + m.id);
+            var d = await github.actions.downloadArtifact({owner: context.repo.owner, repo: context.repo.repo, artifact_id: m.id, archive_format: 'zip'});
+            fs.writeFileSync('/tmp/p.zip', Buffer.from(d.data));
+            core.info('wrote ' + fs.statSync('/tmp/p.zip').size);
+      - name: newer client download
+        id: new
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            var fs = require('fs');
+            var arts = await github.rest.actions.listWorkflowRunArtifacts({owner: context.repo.owner, repo: context.repo.repo, run_id: 41722148848});
+            var m = arts.data.artifacts.filter(a => a.name == 'pr-comments')[0];
+            var d = await github.rest.actions.downloadArtifact({owner: context.repo.owner, repo: context.repo.repo, artifact_id: m.id, archive_format: 'zip'});
+            fs.writeFileSync('/tmp/q.zip', Buffer.from(d.data));
+            core.info('wrote ' + fs.statSync('/tmp/q.zip').size);
+      - run: echo "old=${{ steps.old.outcome }} new=${{ steps.new.outcome }}"
